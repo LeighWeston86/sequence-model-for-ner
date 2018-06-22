@@ -5,6 +5,10 @@ from sklearn.model_selection import KFold
 from keras.utils import to_categorical
 import numpy as np
 from matstract.nlp.ner_features import FeatureGenerator
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from numpy import array
+from scipy.sparse import hstack
+import pandas as pd
 
 
 import pickle
@@ -138,18 +142,82 @@ def get_embedding_matrix(word_to_integer,
 
     return embedding_matrix
 
-def get_syntactical_features(vocabulary):
+def format_char_data(data, words, max_len, max_len_char = 20):
+
+    chars = set([w_i for w in words for w_i in w])
+    n_chars = len(chars)
+    char2idx = {c: i + 2 for i, c in enumerate(chars)}
+    char2idx["UNK"] = 1
+    char2idx["PAD"] = 0
+
+    X_char = []
+    sents = [[(word, pos, bio) for (word, pos), bio in sent] for doc in data for sent in doc]
+    for sentence in sents:
+        sent_seq = []
+        for i in range(max_len):
+            word_seq = []
+            for j in range(max_len_char):
+                try:
+                    word_seq.append(char2idx.get(sentence[i][0][j]))
+                except:
+                    word_seq.append(char2idx.get("PAD"))
+            sent_seq.append(word_seq)
+        X_char.append(np.array(sent_seq))
+
+    char_cache = {}
+    char_cache['X_char'] = X_char
+    char_cache['max_len_char'] = max_len_char
+    char_cache['n_chars'] = n_chars
+    return char_cache
+
+
+
+
+
+def get_syntactical_features(word_to_integer, embedding_matrix):
     fg = FeatureGenerator()
     all_features = []
-    for word in vocabulary:
+    for word, i in word_to_integer.items():
         all_features.append(fg.syntactical_features(word))
-    categorical = to_categorical(all_features)
+    all_features = pd.DataFrame(all_features)
+    cat_array_exists = False
+    for col in all_features:
+        data_vec = hot_encoder(all_features[col])
+        if not cat_array_exists:
+            cat_feature_array = data_vec
+            cat_array_exists = True
+        else:
+            cat_feature_array = hstack([cat_feature_array, data_vec])
+    cat_feature_array = cat_feature_array.tocsr()
     feature_dict = {}
-    for row, word in zip(categorical, vocabulary):
+    for row, word in zip(cat_feature_array, word_to_integer.keys()):
         feature_dict[word] = row
-    return feature_dict
+    #Create a syntax matrix
+    syntax_matrix = np.zeros((len(word_to_integer) + 1, cat_feature_array.shape[1]))
+    for word, i in word_to_integer.items():
+        syntax_vector = feature_dict.get(word)
+        if syntax_vector is not None:
+            syntax_matrix[i] = syntax_vector.todense()
 
+    combined_matrix = np.hstack([embedding_matrix, syntax_matrix])
 
+    return combined_matrix
+
+def hot_encoder(data_vec):
+    '''
+    Binary encoder for categorical f
+    :param array/list containg categoricla features:
+    :return: sklean OneHotEncoder vector
+    '''
+    values = array(data_vec)
+    # integer encode
+    label_encoder = LabelEncoder()
+    integer_encoded = label_encoder.fit_transform(values)
+    # binary encode
+    onehot_encoder = OneHotEncoder(sparse=True)
+    integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
+    onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
+    return onehot_encoded
 
 
 if __name__ == "__main__":
