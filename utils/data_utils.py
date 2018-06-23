@@ -90,6 +90,42 @@ def format_data(data, max_sequence_length = None):
 
     return cache
 
+def format_char_data(data, max_sent_length = None, max_word_length = 20):
+
+    lengths = [len(sent) for doc in data for sent in doc]
+    if not max_sent_length:
+        max_sequence_length = max(lengths)
+    print('Max sequence length: {}'.format(max_sequence_length))
+
+    # Flatten out in to sentences
+    word_sents = [[word for (word, pos), bio in sent] for doc in data for sent in doc]
+    tag_sents = [[bio for (word, pos), bio in sent] for doc in data for sent in doc]
+
+    #Get unique words/chars
+    words = list(set([word for doc in data for sent in doc for (word, pos), bio in sent]))
+    chars = list(set([char for word in words for char in word]))
+    n_chars = len(chars)
+
+    #Char to integer mapping
+    char_to_integer = {char:n for n, char in enumerate(chars, 1)}
+    integer_to_char = {n:char for n, char in enumerate(chars, 1)}
+
+    #Sents to char_integer encoded
+    char_sents = [[[char_to_integer[char] for char in word] for word in sent] for sent in word_sents]
+    #Add the padding at sent and word level
+    padded_char_sents = pad_sequences([[np.squeeze(pad_sequences([[char for char in word]], maxlen=max_word_length))
+                          for word in sent]
+                         for sent in char_sents], maxlen = max_sent_length)
+
+    cache = {'max_word_length'    : max_word_length,
+             'max_sent_length'    : max_sent_length,
+             'padded_char_sents'  : padded_char_sents,
+             'char_to_integer'    : char_to_integer,
+             'integer_to_char'    : integer_to_char,
+             'n_chars'            : n_chars}
+
+    return cache
+
 
 def cross_val_sets(sents, labels, n_cv = 5):
     '''
@@ -142,36 +178,6 @@ def get_embedding_matrix(word_to_integer,
 
     return embedding_matrix
 
-def format_char_data(data, words, max_len, max_len_char = 20):
-
-    chars = set([w_i for w in words for w_i in w])
-    n_chars = len(chars)
-    char2idx = {c: i + 2 for i, c in enumerate(chars)}
-    char2idx["UNK"] = 1
-    char2idx["PAD"] = 0
-
-    X_char = []
-    sents = [[(word, pos, bio) for (word, pos), bio in sent] for doc in data for sent in doc]
-    for sentence in sents:
-        sent_seq = []
-        for i in range(max_len):
-            word_seq = []
-            for j in range(max_len_char):
-                try:
-                    word_seq.append(char2idx.get(sentence[i][0][j]))
-                except:
-                    word_seq.append(char2idx.get("PAD"))
-            sent_seq.append(word_seq)
-        X_char.append(np.array(sent_seq))
-
-    char_cache = {}
-    char_cache['X_char'] = X_char
-    char_cache['max_len_char'] = max_len_char
-    char_cache['n_chars'] = n_chars
-    return char_cache
-
-
-
 
 
 def get_syntactical_features(word_to_integer, embedding_matrix):
@@ -218,6 +224,35 @@ def hot_encoder(data_vec):
     integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
     onehot_encoded = onehot_encoder.fit_transform(integer_encoded)
     return onehot_encoded
+
+
+def format_char_data_old(data, words, max_len, max_len_char = 20):
+
+    chars = set([w_i for w in words for w_i in w])
+    n_chars = len(chars)
+    char2idx = {c: i + 2 for i, c in enumerate(chars)}
+    char2idx["UNK"] = 1
+    char2idx["PAD"] = 0
+
+    X_char = []
+    sents = [[(word, pos, bio) for (word, pos), bio in sent] for doc in data for sent in doc]
+    for sentence in sents:
+        sent_seq = []
+        for i in range(max_len):
+            word_seq = []
+            for j in range(max_len_char):
+                try:
+                    word_seq.append(char2idx.get(sentence[i][0][j]))
+                except:
+                    word_seq.append(char2idx.get("PAD"))
+            sent_seq.append(word_seq)
+        X_char.append(np.array(sent_seq))
+
+    char_cache = {}
+    char_cache['X_char'] = X_char
+    char_cache['max_len_char'] = max_len_char
+    char_cache['n_chars'] = n_chars
+    return char_cache
 
 
 if __name__ == "__main__":
