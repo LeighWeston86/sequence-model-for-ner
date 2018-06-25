@@ -95,13 +95,7 @@ class BiLSTM:
         #print(probs[0].shape)
 
         predicted = probs.argmax(axis=-1)
-        print()
-        print(predicted[200])
         actual = y_test.argmax(axis=-1)
-        print(y_test.shape)
-        print(y_test)
-        print(y_test[200])
-        print(actual[200])
         accuracy, f1 = get_metrics(actual, predicted, self.cache['integer_to_label'])
         print('acc: {}, f1: {}'.format(accuracy, f1))
 
