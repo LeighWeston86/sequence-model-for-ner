@@ -38,18 +38,12 @@ def get_metrics(actual, predicted, integer_to_label):
     accuracies = []
     for _ac, _pred in zip(actual, predicted):
 
-        print(_ac)
-        print(_pred)
-
         ac = []
         pred = []
         for a, p in zip(_ac, _pred):
             if a in integer_to_label.keys():
                 ac.append(integer_to_label[a])
                 pred.append(integer_to_label[p])
-
-        print(ac)
-        print(pred)
 
         accuracies += [a == p for (a, p) in zip(ac, pred)]
 
