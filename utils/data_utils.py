@@ -148,7 +148,8 @@ def cross_val_sets(sents, labels, n_cv = 5):
 
 def get_embedding_matrix(word_to_integer,
                          embeddings_location = 'data/w2v.txt',
-                         embedding_dim = 200):
+                         embedding_dim = 200,
+                         as_dict = False):
     '''
     Uses a word_to_integer mapping and local word embeddings to generate the embedding matrix
 
@@ -162,13 +163,16 @@ def get_embedding_matrix(word_to_integer,
     embeddings_location = os.path.join(
         os.path.dirname(os.path.abspath(__file__)), embeddings_location)
 
-    embeddings_index = {}
-    with open(embeddings_location) as f:
-        for line in f:
-            values = line.split()
-            word = values[0]
-            coefs = np.asarray(values[1:], dtype='float32')
-            embeddings_index[word] = coefs
+    if not as_dict:
+        embeddings_index = {}
+        with open(embeddings_location) as f:
+            for line in f:
+                values = line.split()
+                word = values[0]
+                coefs = np.asarray(values[1:], dtype='float32')
+                embeddings_index[word] = coefs
+    else:
+        embeddings_index = pickle.load(open(embeddings_location, 'rb'))
 
     embedding_matrix = np.zeros((len(word_to_integer) + 1, embedding_dim))  #Plus 1 ensures padding element is set ot zero
     for word, i in word_to_integer.items():

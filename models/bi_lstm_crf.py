@@ -41,14 +41,14 @@ class BiLSTM:
         # model = Embedding(input_dim=n_words, output_dim=50, input_length=maxlen)(input)
         model = embedding_layer(input)
         model = Dropout(0.1)(model)
-        model = Bidirectional(LSTM(units=50, return_sequences=True))(model)
+        model = Bidirectional(LSTM(units=300, return_sequences=True))(model)
         model = Dropout(0.5)(model)
         model = TimeDistributed(Dense(n_tags + 1, activation="relu"))(model)
         crf = CRF(n_tags+1)
         out = crf(model)
         model = Model(input, out)
         optimizer = Adam(lr=0.01, beta_1=0.9, beta_2=0.999)
-        model.compile(optimizer="rmsprop", loss=crf.loss_function, metrics=[crf.accuracy])
+        model.compile(optimizer=optimizer, loss=crf.loss_function, metrics=[crf.accuracy])
         model.fit(X_train, y_train, batch_size=100, epochs=10)
         self.model = model
 

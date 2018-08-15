@@ -1,5 +1,5 @@
 import numpy as np
-from utils.data_utils import load_annotations, format_data, cross_val_sets, get_embedding_matrix
+from utils.data_utils import load_annotations, format_data, cross_val_sets, get_embedding_matrix, get_syntactical_features
 from utils.metrics import get_metrics
 from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional
 from keras.layers.wrappers import TimeDistributed
@@ -28,18 +28,20 @@ class BiLSTM:
 
         # Embedding matrix
         embedding_matrix = get_embedding_matrix(word_to_integer)
+        embedding_plus_syntax = get_syntactical_features(self.cache['word_to_integer'], embedding_matrix)
+        embedding_dim = embedding_plus_syntax.shape[1]
 
         # Embedding layer
         embedding_layer = Embedding(input_dim=n_words + 1,
-                                    output_dim=200,
-                                    weights=[embedding_matrix],
+                                    output_dim=embedding_dim,
+                                    weights=[embedding_plus_syntax],
                                     input_length=max_sequence_length,
                                     trainable=False)
 
         input = Input(shape=(max_sequence_length,))
         # model = Embedding(input_dim=n_words, output_dim=50, input_length=maxlen)(input)
         model = embedding_layer(input)
-        model = Dropout(0.1)(model)
+        model = Dropout(0.5)(model)
         model = Bidirectional(LSTM(units=100, return_sequences=True))(model)
         model = Dropout(0.5)(model)
         out = TimeDistributed(Dense(n_tags + 1, activation="softmax"))(model)  # softmax output layer

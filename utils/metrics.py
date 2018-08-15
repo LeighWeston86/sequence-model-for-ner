@@ -30,7 +30,7 @@ def get_chunks(sequence):
 
     return set(chunks)
 
-def get_metrics(actual, predicted, integer_to_label):
+def get_metrics(actual, predicted, integer_to_label, tag = None):
 
 
     correct_preds, total_correct, total_preds = 0.0, 0.0, 0.0
@@ -49,6 +49,11 @@ def get_metrics(actual, predicted, integer_to_label):
 
         ac_chunks = set(get_chunks(ac))
         pred_chunks = set(get_chunks(pred))
+
+        if tag:
+            ac_chunks = set([(l, b, e) for l, b, e in ac_chunks if l == tag])
+            pred_chunks = set([(l, b, e) for l, b, e in pred_chunks if l == tag])
+
         correct_preds += len(ac_chunks & pred_chunks)
         total_preds += len(pred_chunks)
         total_correct += len(ac_chunks)
@@ -57,5 +62,5 @@ def get_metrics(actual, predicted, integer_to_label):
     r = correct_preds / total_correct if correct_preds > 0 else 0
     f1 = 2*p*r/(p+r) if correct_preds > 0 else 0
 
-    return np.mean(accuracies), f1
+    return np.mean(accuracies), f1, p, r
 
