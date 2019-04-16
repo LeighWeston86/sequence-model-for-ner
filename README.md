@@ -29,6 +29,7 @@ n_tags = word_cache["n_tags"]
 The model has to be built before fitting:
 
 ```python
+from ner_tagging.model.model import NERTagger
 model = NERTagger()
 model.build(embedding_matrix, max_sequence_length, n_words, max_char_sequence_length, n_chars, n_tags)
 model.fit(X_train, X_train_char, y_train, num_epochs=15)
@@ -39,6 +40,7 @@ model.fit(X_train, X_train_char, y_train, num_epochs=15)
 To assess the model after training, do the following:
 
 ```python
+from ner_tagging.model.utils import get_metrics
 predicted = model.predict(X_dev, X_dev_char)
 actual = y_dev.argmax(axis=-1)
 print(get_metrics(actual, predicted, word_cache["integer_to_label"]))
