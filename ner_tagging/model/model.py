@@ -129,39 +129,3 @@ class NERTagger(object):
         probs = self.model.predict([X_test_char, X_test])
         predicted = probs.argmax(axis=-1)
         return predicted
-
-if __name__ == "__main__":
-    # from utils.data_utils import load_annotations, format_data, format_char_data, cross_val_sets, get_embedding_matrix
-    # annotations = load_annotations("../utils/data/annotations.p")
-    # cache = format_data(annotations)
-    # char_cache = format_char_data(annotations)
-    # embedding_matrix = get_embedding_matrix(cache['word_to_integer'], "../utils/data/w2v.txt", as_dict=False)
-    # n_words = cache['n_words']
-    # n_tags = cache['n_tags']
-    # n_chars = char_cache['n_chars']
-    # max_sequence_length = cache['max_sequence_length']
-    # max_char_sequence_length = char_cache['max_word_length']
-    # X = cache['padded_sents']
-    # X_char = char_cache['padded_char_sents']
-    # y = cache['padded_labels']
-    #
-    # model = NERTagger()
-    # model.build(embedding_matrix, max_sequence_length, n_words, max_char_sequence_length, n_chars, n_tags)
-    # model.fit(X, X_char, y)
-    from ner_tagging.model.utils import get_data, get_embedding_matrix, get_metrics
-    training, development, test, word_cache, char_cache = get_data()
-    embedding_matrix = get_embedding_matrix(word_cache["word_to_integer"], 200)
-    X_dev, X_dev_char, y_dev = development
-    X_train, X_train_char, y_train = training
-    max_sequence_length = word_cache["max_sequence_length"]
-    n_words = word_cache["n_words"]
-    max_char_sequence_length = char_cache["max_word_length"]
-    n_chars = char_cache["n_chars"]
-    n_tags = word_cache["n_tags"]
-    model = NERTagger()
-    model.build(embedding_matrix, max_sequence_length, n_words, max_char_sequence_length, n_chars, n_tags)
-    model.fit(X_train, X_train_char, y_train, num_epochs=15)
-    predicted = model.predict(X_dev, X_dev_char)
-    actual = y_dev.argmax(axis=-1)
-    print(get_metrics(actual, predicted, word_cache["integer_to_label"]))
-

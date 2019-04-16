@@ -4,7 +4,7 @@ A bi-directional LSTM for sequence tagging. This model was developed for Named E
 
 ##### Data
 
-The materials-science specific training data included in this repository is heavily truncated; to access the full data, contact Leigh Weston at lweston@lbl.gov. To use your own data, replace the training/test sets, and embeddings file with your own data in teh same format. 
+The materials-science specific training data included in this repository is heavily truncated; to access the full data, contact Leigh Weston at lweston@lbl.gov. To use your own data, replace the training/test sets, and embeddings file with your own data in the same format. 
 
 Load the data as follows:
 ```python
@@ -16,7 +16,7 @@ embedding_matrix = get_embedding_matrix(word_cache["word_to_integer"], word_embe
 
 ##### Training
 
-To train the model first extract the requirement data:
+To train the model first extract the required data:
 
 ```python
 max_sequence_length = word_cache["max_sequence_length"]
