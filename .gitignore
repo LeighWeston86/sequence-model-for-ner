@@ -1,8 +1,4 @@
+ner_tagging/all_data
 .idea/
-
-models/annotations.p
-models/fitted_model.h5
-models/s3-us-west-1.amazonaws.com/
-utils/__pycache__/
-utils/data/
-utils/s3-us-west-1.amazonaws.com/
+ner_tagging/__pycache__/
+ner_tagging/model/__pycache__/
