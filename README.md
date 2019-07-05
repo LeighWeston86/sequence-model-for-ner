@@ -1,4 +1,4 @@
-A bi-directional LSTM for sequence tagging. This model was developed for Named Entity Recognition (NER) applied to materials science. Details can be found in the following publication: Weston at al., submitted to J. Chem. Inf. Model.
+A bi-directional LSTM for sequence tagging. This model was developed for Named Entity Recognition (NER) applied to materials science. Details can be found in the following publication: Weston at al., submitted to J. Chem. Inf. Model: https://doi.org/10.26434/chemrxiv.8226068.v1
 
 ### Usage
 
